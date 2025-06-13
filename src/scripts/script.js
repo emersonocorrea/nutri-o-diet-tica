@@ -36,13 +36,17 @@ function updateButtonStates() {
     const checkboxes = document.querySelectorAll('.patientCheckbox:checked');
     const editBtn = document.getElementById('editSelectedBtn');
     const deleteBtn = document.getElementById('deleteSelectedBtn');
-    editBtn.disabled = checkboxes.length !== 1; // Editar apenas se 1 paciente estiver selecionado
-    deleteBtn.disabled = checkboxes.length === 0; // Excluir se pelo menos 1 estiver selecionado
+    if (editBtn && deleteBtn) {
+        editBtn.disabled = checkboxes.length !== 1;
+        deleteBtn.disabled = checkboxes.length === 0;
+    }
 }
 
 // Função para filtrar pacientes
 function filterPatients() {
-    const filterValue = document.getElementById('filterInput').value.toLowerCase();
+    const filterInput = document.getElementById('filterInput');
+    if (!filterInput) return;
+    const filterValue = filterInput.value.toLowerCase();
     const filteredPatients = patients.filter(patient =>
         patient.nome.toLowerCase().includes(filterValue) ||
         patient.prontuario.toLowerCase().includes(filterValue) ||
@@ -58,122 +62,194 @@ const openModalBtn = document.getElementById('openModalBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
 const patientForm = document.getElementById('patientForm');
-const pesoInput = patientForm.querySelector('input[name="peso"]');
-const alturaInput = patientForm.querySelector('input[name="altura"]');
-const imcInput = patientForm.querySelector('input[name="imc"]');
-const editIndexInput = patientForm.querySelector('input[name="editIndex"]');
+const pesoInput = patientForm?.querySelector('input[name="peso"]');
+const alturaInput = patientForm?.querySelector('input[name="altura"]');
+const imcInput = patientForm?.querySelector('input[name="imc"]');
+const editIndexInput = patientForm?.querySelector('input[name="editIndex"]');
+
+// Função para atualizar visibilidade dos campos de descrição de refeições
+function toggleRefeicaoDesc() {
+    const checkboxes = patientForm?.querySelectorAll('.refeicaoCheck') || [];
+    checkboxes.forEach(cb => {
+        const descField = patientForm.querySelector(`textarea[name="refeicao${cb.value}"]`);
+        if (descField) {
+            descField.classList.toggle('hidden', !cb.checked);
+        }
+    });
+}
 
 // Atualiza o IMC em tempo real
 function updateIMC() {
+    if (!pesoInput || !alturaInput || !imcInput) return;
     const peso = parseFloat(pesoInput.value);
     const altura = parseFloat(alturaInput.value);
     imcInput.value = calculateIMC(peso, altura);
 }
 
-pesoInput.addEventListener('input', updateIMC);
-alturaInput.addEventListener('input', updateIMC);
+if (pesoInput && alturaInput) {
+    pesoInput.addEventListener('input', updateIMC);
+    alturaInput.addEventListener('input', updateIMC);
+}
 
-openModalBtn.addEventListener('click', () => {
-    modalTitle.textContent = 'Cadastro de Paciente';
-    editIndexInput.value = '';
-    patientForm.reset();
-    modal.classList.remove('hidden');
+// Manipula checkboxes de refeições
+const refeicaoCheckboxes = patientForm?.querySelectorAll('.refeicaoCheck') || [];
+refeicaoCheckboxes.forEach(cb => {
+    cb.addEventListener('change', toggleRefeicaoDesc);
 });
 
-closeModalBtn.addEventListener('click', () => {
-    modal.classList.add('hidden');
-    patientForm.reset();
-});
+if (openModalBtn) {
+    openModalBtn.addEventListener('click', () => {
+        if (modal && modalTitle && patientForm) {
+            modalTitle.textContent = 'Cadastro de Paciente';
+            editIndexInput.value = '';
+            patientForm.reset();
+            toggleRefeicaoDesc();
+            modal.classList.remove('hidden');
+        }
+    });
+}
 
-cancelModalBtn.addEventListener('click', () => {
-    modal.classList.add('hidden');
-    patientForm.reset();
-});
+if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
+        if (modal && patientForm) {
+            modal.classList.add('hidden');
+            patientForm.reset();
+            toggleRefeicaoDesc();
+        }
+    });
+}
+
+if (cancelModalBtn) {
+    cancelModalBtn.addEventListener('click', () => {
+        if (modal && patientForm) {
+            modal.classList.add('hidden');
+            patientForm.reset();
+            toggleRefeicaoDesc();
+        }
+    });
+}
 
 // Manipula o checkbox "Marcar Todos"
-document.getElementById('selectAll').addEventListener('change', (e) => {
-    const checkboxes = document.querySelectorAll('.patientCheckbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = e.target.checked;
+const selectAll = document.getElementById('selectAll');
+if (selectAll) {
+    selectAll.addEventListener('change', (e) => {
+        const checkboxes = document.querySelectorAll('.patientCheckbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+        updateButtonStates();
     });
-    updateButtonStates();
-});
+}
 
 // Atualiza o estado dos botões quando checkboxes individuais são alterados
 document.addEventListener('change', (e) => {
     if (e.target.classList.contains('patientCheckbox')) {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.patientCheckbox');
-        selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+        if (selectAll) {
+            const checkboxes = document.querySelectorAll('.patientCheckbox');
+            selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+        }
         updateButtonStates();
     }
 });
 
 // Manipula a edição de um paciente
-document.getElementById('editSelectedBtn').addEventListener('click', () => {
-    const selectedCheckbox = document.querySelector('.patientCheckbox:checked');
-    if (selectedCheckbox) {
-        const index = parseInt(selectedCheckbox.dataset.index);
-        const patient = patients[index];
-        modalTitle.textContent = 'Editar Paciente';
-        editIndexInput.value = index;
-        patientForm.nome.value = patient.nome;
-        patientForm.prontuario.value = patient.prontuario;
-        patientForm.enfermaria.value = patient.enfermaria;
-        patientForm.nivelAssistencia.value = patient.nivelAssistencia;
-        patientForm.peso.value = patient.peso;
-        patientForm.altura.value = patient.altura;
-        patientForm.imc.value = patient.imc;
-        patientForm.dieta.value = patient.dieta;
-        patientForm.observacoes.value = patient.observacoes || '';
-        patientForm.querySelectorAll('input[name="refeicoes"]').forEach(cb => {
-            cb.checked = patient.refeicoes.includes(cb.value);
-        });
-        modal.classList.remove('hidden');
-    }
-});
+const editSelectedBtn = document.getElementById('editSelectedBtn');
+if (editSelectedBtn) {
+    editSelectedBtn.addEventListener('click', () => {
+        const selectedCheckbox = document.querySelector('.patientCheckbox:checked');
+        if (selectedCheckbox && modal && modalTitle && patientForm) {
+            const index = parseInt(selectedCheckbox.dataset.index);
+            const patient = patients[index];
+            modalTitle.textContent = 'Editar Paciente';
+            editIndexInput.value = index;
+            patientForm.nome.value = patient.nome;
+            patientForm.prontuario.value = patient.prontuario;
+            patientForm.enfermaria.value = patient.enfermaria;
+            patientForm.nivelAssistencia.value = patient.nivelAssistencia;
+            patientForm.peso.value = patient.peso;
+            patientForm.altura.value = patient.altura;
+            patientForm.imc.value = patient.imc;
+            patientForm.dieta.value = patient.dieta;
+            patientForm.observacoes.value = patient.observacoes || '';
+            refeicaoCheckboxes.forEach(cb => {
+                cb.checked = patient.refeicoes && !!patient.refeicoes[cb.value];
+                const descField = patientForm.querySelector(`textarea[name="refeicao${cb.value}"]`);
+                if (descField) {
+                    descField.value = patient.refeicoes && patient.refeicoes[cb.value] ? patient.refeicoes[cb.value] : '';
+                }
+            });
+            toggleRefeicaoDesc();
+            modal.classList.remove('hidden');
+        }
+    });
+}
 
 // Manipula a exclusão de pacientes
-document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
-    if (confirm('Deseja excluir os pacientes selecionados?')) {
-        const selectedIndexes = Array.from(document.querySelectorAll('.patientCheckbox:checked'))
-            .map(cb => parseInt(cb.dataset.index))
-            .sort((a, b) => b - a); // Ordena em ordem decrescente para evitar problemas ao remover
-        selectedIndexes.forEach(index => patients.splice(index, 1));
-        renderPatientList(patients);
-        document.getElementById('selectAll').checked = false;
-    }
-});
+const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+if (deleteSelectedBtn) {
+    deleteSelectedBtn.addEventListener('click', () => {
+        if (confirm('Deseja excluir os pacientes selecionados?')) {
+            const selectedIndexes = Array.from(document.querySelectorAll('.patientCheckbox:checked'))
+                .map(cb => parseInt(cb.dataset.index))
+                .sort((a, b) => b - a);
+            selectedIndexes.forEach(index => patients.splice(index, 1));
+            renderPatientList(patients);
+            if (selectAll) {
+                selectAll.checked = false;
+            }
+        }
+    });
+}
 
 // Manipula o envio do formulário
-patientForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const formData = new FormData(patientForm);
-    const editIndex = parseInt(formData.get('editIndex'));
-    const newPatient = {
-        nome: formData.get('nome'),
-        prontuario: formData.get('prontuario'),
-        enfermaria: formData.get('enfermaria'),
-        nivelAssistencia: formData.get('nivelAssistencia'),
-        peso: parseFloat(formData.get('peso')),
-        altura: parseFloat(formData.get('altura')),
-        imc: parseFloat(calculateIMC(formData.get('peso'), formData.get('altura'))),
-        dieta: formData.get('dieta'),
-        refeicoes: formData.getAll('refeicoes'),
-        observacoes: formData.get('observacoes')
-    };
-    if (!isNaN(editIndex)) {
-        patients[editIndex] = newPatient;
-    } else {
-        patients.push(newPatient);
-    }
-    renderPatientList(patients);
-    modal.classList.add('hidden');
-    patientForm.reset();
-});
+if (patientForm) {
+    patientForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(patientForm);
+        const editIndex = parseInt(formData.get('editIndex'));
+        const refeicoes = {};
+        ['Desjejum', 'Almoço', 'Lanche', 'Jantar', 'Ceia'].forEach(ref => {
+            if (formData.getAll('refeicaoCheck').includes(ref)) {
+                const desc = formData.get(`refeicao${ref}`) || '';
+                if (desc.trim()) {
+                    refeicoes[ref] = desc;
+                }
+            }
+        });
+        const newPatient = {
+            nome: formData.get('nome'),
+            prontuario: formData.get('prontuario'),
+            enfermaria: formData.get('enfermaria'),
+            nivelAssistencia: formData.get('nivelAssistencia'),
+            peso: parseFloat(formData.get('peso')),
+            altura: parseFloat(formData.get('altura')),
+            imc: parseFloat(calculateIMC(formData.get('peso'), formData.get('altura'))),
+            dieta: formData.get('dieta'),
+            refeicoes,
+            observacoes: formData.get('observacoes') || ''
+        };
+        if (!isNaN(editIndex)) {
+            patients[editIndex] = newPatient;
+        } else {
+            patients.push(newPatient);
+        }
+        renderPatientList(patients);
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+        patientForm.reset();
+        toggleRefeicaoDesc();
+    });
+}
 
 // Inicializa filtros
-document.getElementById('filterInput').addEventListener('input', filterPatients);
+const filterInput = document.getElementById('filterInput');
+if (filterInput) {
+    filterInput.addEventListener('input', filterPatients);
+}
 
 // Renderiza a lista inicial
-document.addEventListener('DOMContentLoaded', () => renderPatientList(patients));
+document.addEventListener('DOMContentLoaded', () => {
+    renderPatientList(patients);
+    toggleRefeicaoDesc();
+});

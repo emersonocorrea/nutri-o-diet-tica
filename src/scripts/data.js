@@ -8,7 +8,11 @@ const mockPatients = [
         altura: 1.75,
         imc: 22.86,
         dieta: "Dieta Geral",
-        refeicoes: ["Desjejum", "Almoço", "Jantar"],
+        refeicoes: {
+            Desjejum: "Café com leite, pão integral, margarina",
+            Almoço: "Arroz, feijão, frango grelhado, salada",
+            Jantar: "Sopa de legumes, pão integral"
+        },
         observacoes: "Paciente aceita bem a dieta."
     },
     {
@@ -20,7 +24,14 @@ const mockPatients = [
         altura: 1.67,
         imc: 21.48,
         dieta: "Dieta Hipossódica",
-        refeicoes: ["Desjejum", "Almoço", "Lanche", "Jantar"],
+        refeicoes: {
+            Desjejum: "Suco natural, pão sem sal, queijo cottage",
+            Almoço: "Arroz integral, peixe cozido, legumes no vapor",
+            Lanche: "Fruta fresca",
+            Jantar: "Salada verde, peito de frango grelhado"
+        },
         observacoes: "Monitorar aceitação da dieta."
     }
 ];
+
+window.mockPatients = mockPatients;
