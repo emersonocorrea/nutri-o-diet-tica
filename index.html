@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SND - Sistema de Nutrição e Dietética Hospitalar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="src/scripts/data.js" defer></script>
+    <script src="src/scripts/script.js" defer></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-6">Sistema de Nutrição e Dietética Hospitalar</h1>
+
+        <!-- Botão para abrir o modal -->
+        <button id="openModalBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4">
+            Adicionar Paciente
+        </button>
+
+        <!-- Modal -->
+        <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+                <h2 class="text-xl font-semibold mb-4" id="modalTitle">Cadastro de Paciente</h2>
+                <!-- Botão de fechar -->
+                <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <form id="patientForm">
+                    <input type="hidden" name="editIndex" id="editIndex">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Nome do Paciente</label>
+                        <input type="text" name="nome" class="mt-1 p-2 w-full border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Prontuário</label>
+                        <input type="text" name="prontuario" class="mt-1 p-2 w-full border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Enfermaria/Leito</label>
+                        <input type="text" name="enfermaria" class="mt-1 p-2 w-full border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Nível de Assistência Nutricional</label>
+                        <select name="nivelAssistencia" class="mt-1 p-2 w-full border rounded" required>
+                            <option value="Nível I (Primário)">Nível I (Primário)</option>
+                            <option value="Nível II (Secundário)">Nível II (Secundário)</option>
+                            <option value="Nível III (Terciário)">Nível III (Terciário)</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Peso (kg)</label>
+                        <input type="number" name="peso" step="0.1" min="0" class="mt-1 p-2 w-full border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Altura (m)</label>
+                        <input type="number" name="altura" step="0.01" min="0" class="mt-1 p-2 w-full border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">IMC (calculado)</label>
+                        <input type="number" name="imc" class="mt-1 p-2 w-full border rounded bg-gray-100" readonly>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Dieta</label>
+                        <input type="text" name="dieta" class="mt-1 p-2 w-full border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Refeições</label>
+                        <div class="flex flex-col gap-2">
+                            <label><input type="checkbox" name="refeicoes" value="Desjejum"> Desjejum</label>
+                            <label><input type="checkbox" name="refeicoes" value="Almoço"> Almoço</label>
+                            <label><input type="checkbox" name="refeicoes" value="Lanche"> Lanche</label>
+                            <label><input type="checkbox" name="refeicoes" value="Jantar"> Jantar</label>
+                            <label><input type="checkbox" name="refeicoes" value="Ceia"> Ceia</label>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Observações</label>
+                        <textarea name="observacoes" class="mt-1 p-2 w-full border rounded"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" id="cancelModalBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancelar</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Filtros e Botões de Ação -->
+        <div class="mb-4 flex gap-2">
+            <input type="text" id="filterInput" class="p-2 border rounded flex-grow" placeholder="Filtrar por nome, prontuário ou enfermaria">
+            <button id="editSelectedBtn" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600" disabled>Editar Selecionado</button>
+            <button id="deleteSelectedBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" disabled>Excluir Selecionados</button>
+        </div>
+
+        <!-- Lista de Pacientes -->
+        <div class="bg-white shadow rounded-lg overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <input type="checkbox" id="selectAll">
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prontuário</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enfermaria/Leito</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nível Assistência</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dieta</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IMC</th>
+                    </tr>
+                </thead>
+                <tbody id="patientList" class="divide-y divide-gray-200"></tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

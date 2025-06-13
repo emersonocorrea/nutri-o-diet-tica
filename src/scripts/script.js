@@ -1,0 +1,179 @@
+// Inicializa lista de pacientes com dados mock
+let patients = [...mockPatients];
+
+// Função para calcular IMC
+function calculateIMC(peso, altura) {
+    if (peso > 0 && altura > 0) {
+        return (peso / (altura * altura)).toFixed(2);
+    }
+    return 0;
+}
+
+// Função para renderizar a lista de pacientes
+function renderPatientList(filteredPatients) {
+    const patientList = document.getElementById('patientList');
+    patientList.innerHTML = '';
+    filteredPatients.forEach((patient, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <input type="checkbox" class="patientCheckbox" data-index="${index}">
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">${patient.nome}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${patient.prontuario}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${patient.enfermaria}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${patient.nivelAssistencia}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${patient.dieta}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${patient.imc}</td>
+        `;
+        patientList.appendChild(row);
+    });
+    updateButtonStates();
+}
+
+// Função para atualizar o estado dos botões de ação
+function updateButtonStates() {
+    const checkboxes = document.querySelectorAll('.patientCheckbox:checked');
+    const editBtn = document.getElementById('editSelectedBtn');
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    editBtn.disabled = checkboxes.length !== 1; // Editar apenas se 1 paciente estiver selecionado
+    deleteBtn.disabled = checkboxes.length === 0; // Excluir se pelo menos 1 estiver selecionado
+}
+
+// Função para filtrar pacientes
+function filterPatients() {
+    const filterValue = document.getElementById('filterInput').value.toLowerCase();
+    const filteredPatients = patients.filter(patient =>
+        patient.nome.toLowerCase().includes(filterValue) ||
+        patient.prontuario.toLowerCase().includes(filterValue) ||
+        patient.enfermaria.toLowerCase().includes(filterValue)
+    );
+    renderPatientList(filteredPatients);
+}
+
+// Manipula o modal
+const modal = document.getElementById('modal');
+const modalTitle = document.getElementById('modalTitle');
+const openModalBtn = document.getElementById('openModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const cancelModalBtn = document.getElementById('cancelModalBtn');
+const patientForm = document.getElementById('patientForm');
+const pesoInput = patientForm.querySelector('input[name="peso"]');
+const alturaInput = patientForm.querySelector('input[name="altura"]');
+const imcInput = patientForm.querySelector('input[name="imc"]');
+const editIndexInput = patientForm.querySelector('input[name="editIndex"]');
+
+// Atualiza o IMC em tempo real
+function updateIMC() {
+    const peso = parseFloat(pesoInput.value);
+    const altura = parseFloat(alturaInput.value);
+    imcInput.value = calculateIMC(peso, altura);
+}
+
+pesoInput.addEventListener('input', updateIMC);
+alturaInput.addEventListener('input', updateIMC);
+
+openModalBtn.addEventListener('click', () => {
+    modalTitle.textContent = 'Cadastro de Paciente';
+    editIndexInput.value = '';
+    patientForm.reset();
+    modal.classList.remove('hidden');
+});
+
+closeModalBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    patientForm.reset();
+});
+
+cancelModalBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    patientForm.reset();
+});
+
+// Manipula o checkbox "Marcar Todos"
+document.getElementById('selectAll').addEventListener('change', (e) => {
+    const checkboxes = document.querySelectorAll('.patientCheckbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = e.target.checked;
+    });
+    updateButtonStates();
+});
+
+// Atualiza o estado dos botões quando checkboxes individuais são alterados
+document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('patientCheckbox')) {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.patientCheckbox');
+        selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+        updateButtonStates();
+    }
+});
+
+// Manipula a edição de um paciente
+document.getElementById('editSelectedBtn').addEventListener('click', () => {
+    const selectedCheckbox = document.querySelector('.patientCheckbox:checked');
+    if (selectedCheckbox) {
+        const index = parseInt(selectedCheckbox.dataset.index);
+        const patient = patients[index];
+        modalTitle.textContent = 'Editar Paciente';
+        editIndexInput.value = index;
+        patientForm.nome.value = patient.nome;
+        patientForm.prontuario.value = patient.prontuario;
+        patientForm.enfermaria.value = patient.enfermaria;
+        patientForm.nivelAssistencia.value = patient.nivelAssistencia;
+        patientForm.peso.value = patient.peso;
+        patientForm.altura.value = patient.altura;
+        patientForm.imc.value = patient.imc;
+        patientForm.dieta.value = patient.dieta;
+        patientForm.observacoes.value = patient.observacoes || '';
+        patientForm.querySelectorAll('input[name="refeicoes"]').forEach(cb => {
+            cb.checked = patient.refeicoes.includes(cb.value);
+        });
+        modal.classList.remove('hidden');
+    }
+});
+
+// Manipula a exclusão de pacientes
+document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
+    if (confirm('Deseja excluir os pacientes selecionados?')) {
+        const selectedIndexes = Array.from(document.querySelectorAll('.patientCheckbox:checked'))
+            .map(cb => parseInt(cb.dataset.index))
+            .sort((a, b) => b - a); // Ordena em ordem decrescente para evitar problemas ao remover
+        selectedIndexes.forEach(index => patients.splice(index, 1));
+        renderPatientList(patients);
+        document.getElementById('selectAll').checked = false;
+    }
+});
+
+// Manipula o envio do formulário
+patientForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(patientForm);
+    const editIndex = parseInt(formData.get('editIndex'));
+    const newPatient = {
+        nome: formData.get('nome'),
+        prontuario: formData.get('prontuario'),
+        enfermaria: formData.get('enfermaria'),
+        nivelAssistencia: formData.get('nivelAssistencia'),
+        peso: parseFloat(formData.get('peso')),
+        altura: parseFloat(formData.get('altura')),
+        imc: parseFloat(calculateIMC(formData.get('peso'), formData.get('altura'))),
+        dieta: formData.get('dieta'),
+        refeicoes: formData.getAll('refeicoes'),
+        observacoes: formData.get('observacoes')
+    };
+    if (!isNaN(editIndex)) {
+        patients[editIndex] = newPatient;
+    } else {
+        patients.push(newPatient);
+    }
+    renderPatientList(patients);
+    modal.classList.add('hidden');
+    patientForm.reset();
+});
+
+// Inicializa filtros
+document.getElementById('filterInput').addEventListener('input', filterPatients);
+
+// Renderiza a lista inicial
+document.addEventListener('DOMContentLoaded', () => renderPatientList(patients));
