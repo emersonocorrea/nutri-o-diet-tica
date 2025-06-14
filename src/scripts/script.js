@@ -34,9 +34,11 @@ function renderPatientList(filteredPatients) {
 // Função para atualizar o estado dos botões de ação
 function updateButtonStates() {
     const checkboxes = document.querySelectorAll('.patientCheckbox:checked');
+    const viewBtn = document.getElementById('viewDetailsBtn');
     const editBtn = document.getElementById('editSelectedBtn');
     const deleteBtn = document.getElementById('deleteSelectedBtn');
-    if (editBtn && deleteBtn) {
+    if (viewBtn && editBtn && deleteBtn) {
+        viewBtn.disabled = checkboxes.length !== 1;
         editBtn.disabled = checkboxes.length !== 1;
         deleteBtn.disabled = checkboxes.length === 0;
     }
@@ -55,7 +57,7 @@ function filterPatients() {
     renderPatientList(filteredPatients);
 }
 
-// Manipula o modal
+// Manipula o modal de cadastro/edição
 const modal = document.getElementById('modal');
 const modalTitle = document.getElementById('modalTitle');
 const openModalBtn = document.getElementById('openModalBtn');
@@ -66,6 +68,12 @@ const pesoInput = patientForm?.querySelector('input[name="peso"]');
 const alturaInput = patientForm?.querySelector('input[name="altura"]');
 const imcInput = patientForm?.querySelector('input[name="imc"]');
 const editIndexInput = patientForm?.querySelector('input[name="editIndex"]');
+
+// Manipula o modal de visualização
+const viewModal = document.getElementById('viewModal');
+const closeViewModalBtn = document.getElementById('closeViewModalBtn');
+const closeViewModalFooterBtn = document.getElementById('closeViewModalFooterBtn');
+const patientDetails = document.getElementById('patientDetails');
 
 // Função para atualizar visibilidade dos campos de descrição de refeições
 function toggleRefeicaoDesc() {
@@ -125,6 +133,51 @@ if (cancelModalBtn) {
             modal.classList.add('hidden');
             patientForm.reset();
             toggleRefeicaoDesc();
+        }
+    });
+}
+
+// Manipula o modal de visualização
+if (closeViewModalBtn) {
+    closeViewModalBtn.addEventListener('click', () => {
+        if (viewModal) {
+            viewModal.classList.add('hidden');
+        }
+    });
+}
+
+if (closeViewModalFooterBtn) {
+    closeViewModalFooterBtn.addEventListener('click', () => {
+        if (viewModal) {
+            viewModal.classList.add('hidden');
+        }
+    });
+}
+
+// Manipula o botão de visualizar detalhes
+const viewDetailsBtn = document.getElementById('viewDetailsBtn');
+if (viewDetailsBtn) {
+    viewDetailsBtn.addEventListener('click', () => {
+        const selectedCheckbox = document.querySelector('.patientCheckbox:checked');
+        if (selectedCheckbox && viewModal && patientDetails) {
+            const index = parseInt(selectedCheckbox.dataset.index);
+            const patient = patients[index];
+            patientDetails.innerHTML = `
+                <p><strong>Nome:</strong> ${patient.nome}</p>
+                <p><strong>Prontuário:</strong> ${patient.prontuario}</p>
+                <p><strong>Enfermaria/Leito:</strong> ${patient.enfermaria}</p>
+                <p><strong>Nível de Assistência:</strong> ${patient.nivelAssistencia}</p>
+                <p><strong>Peso:</strong> ${patient.peso} kg</p>
+                <p><strong>Altura:</strong> ${patient.altura} m</p>
+                <p><strong>IMC:</strong> ${patient.imc}</p>
+                <p><strong>Dieta:</strong> ${patient.dieta}</p>
+                <p><strong>Refeições:</strong></p>
+                <ul class="list-disc pl-5">
+                    ${Object.entries(patient.refeicoes || {}).map(([ref, desc]) => `<li>${ref}: ${desc}</li>`).join('') || '<li>Nenhuma refeição registrada</li>'}
+                </ul>
+                <p><strong>Observações:</strong> ${patient.observacoes || 'Nenhuma'}</p>
+            `;
+            viewModal.classList.remove('hidden');
         }
     });
 }
