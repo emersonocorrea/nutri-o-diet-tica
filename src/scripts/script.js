@@ -67,31 +67,6 @@ function updateButtonStates() {
     }
 }
 
-// Função para gerar código ZPL para etiquetas
-function generateZPLLabels(patients, selectedMeal) {
-    let zpl = '';
-    patients.forEach(patient => {
-        const mealDesc = patient.refeicoes && patient.refeicoes[selectedMeal] ? patient.refeicoes[selectedMeal] : 'Não registrada';
-        // Truncar textos longos para caber na etiqueta (50mm x 20mm, ~400x160 dots a 203 dpi)
-        const nome = patient.nome.substring(0, 30);
-        const prontuario = patient.prontuario.substring(0, 20);
-        const enfermaria = patient.enfermaria.substring(0, 20);
-        const mealLabel = `${selectedMeal}: ${mealDesc}`.substring(0, 30);
-        // Comando ZPL para uma etiqueta
-        zpl += `
-^XA
-^CF0,20
-^FO20,20^FD${nome}^FS
-^FO20,50^FDPront: ${prontuario}^FS
-^FO20,80^FD${enfermaria}^FS
-^FO20,110^FD${mealLabel}^FS
-^FO20,140^BCN,30,N,N,N^FD${prontuario}^FS
-^XZ
-        `;
-    });
-    return zpl.trim();
-}
-
 // Manipula o modal de cadastro/edição
 const modal = document.getElementById('modal');
 const modalTitle = document.getElementById('modalTitle');
@@ -123,7 +98,7 @@ const closeMealResultModalFooterBtn = document.getElementById('closeMealResultMo
 const mealResultDetails = document.getElementById('mealResultDetails');
 const mealResultTitle = document.getElementById('mealResultTitle');
 const printResultBtn = document.getElementById('printResultBtn');
-const printLabelsBtn = document.getElementById('printLabelsBtn');
+const printLabelsPDFBtn = document.getElementById('printLabelsPDFBtn');
 
 // Função para atualizar visibilidade dos campos de descrição de refeições
 function toggleRefeicaoDesc() {
@@ -267,35 +242,32 @@ if (printResultBtn) {
     });
 }
 
-// Manipula o botão de imprimir etiquetas
-if (printLabelsBtn) {
-    printLabelsBtn.addEventListener('click', () => {
+// Manipula o botão de imprimir etiquetas em PDF
+if (printLabelsPDFBtn) {
+    printLabelsPDFBtn.addEventListener('click', async () => {
         if (!currentSelectedMeal) return alert('Nenhuma refeição selecionada.');
         const filteredPatients = getFilteredPatients();
-        const zplContent = generateZPLLabels(filteredPatients, currentSelectedMeal);
-        // Forçar download do arquivo .zpl
-        const blob = new Blob([zplContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `etiquetas_${currentSelectedMeal}.zpl`;
-        a.click();
-        URL.revokeObjectURL(url);
-        /* Para impressão direta com Zebra Browser Print (requer configuração):
+        const endpoint = printLabelsPDFBtn.dataset.endpoint;
         try {
-            BrowserPrint.getDefaultDevice('printer', function(device) {
-                device.send(zplContent, function() {
-                    console.log('Etiqueta enviada com sucesso.');
-                }, function(error) {
-                    alert('Erro ao enviar para a impressora: ' + error);
-                });
-            }, function(error) {
-                alert('Erro ao conectar com a impressora: ' + error);
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    patients: filteredPatients,
+                    selectedMeal: currentSelectedMeal
+                })
             });
-        } catch (e) {
-            alert('Zebra Browser Print não configurado. Baixe o arquivo .zpl e envie manualmente.');
+            if (!response.ok) throw new Error('Erro ao gerar PDF');
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `etiquetas_${currentSelectedMeal}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            alert('Erro ao gerar etiquetas: ' + error.message);
         }
-        */
     });
 }
 
