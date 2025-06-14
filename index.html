@@ -11,94 +11,94 @@
     <script src="src/scripts/script.js" defer></script>
 </head>
 <body class="bg-gray-100 font-sans">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold text-center mb-6">Sistema de Nutrição e Dietética Hospitalar</h1>
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-6">Sistema de Nutrição e Dietética Hospitalar</h1>
 
         <!-- Botão para abrir o modal de cadastro -->
-        <button id="openModalBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4">
+        <button id="openModalBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4 w-full sm:w-auto min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
             Adicionar Paciente
         </button>
 
         <!-- Modal de Cadastro/Edição -->
         <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
-                <h2 class="text-xl font-semibold mb-4" id="modalTitle">Cadastro de Paciente</h2>
+            <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4" id="modalTitle">Cadastro de Paciente</h2>
                 <!-- Botão de fechar -->
-                <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 min-h-10 min-w-10 touch-action-manipulation bg-gray-100 hover:bg-gray-200 rounded-full p-1 focus:ring-2 focus:ring-gray-500 transition-colors duration-200">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
                 <form id="patientForm">
                     <input type="hidden" name="editIndex" id="editIndex">
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Nome do Paciente</label>
-                        <input type="text" name="nome" class="mt-1 p-2 w-full border rounded" required>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Nome do Paciente</label>
+                        <input type="text" name="nome" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Prontuário</label>
-                        <input type="text" name="prontuario" class="mt-1 p-2 w-full border rounded" required>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Prontuário</label>
+                        <input type="text" name="prontuario" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Enfermaria/Leito</label>
-                        <input type="text" name="enfermaria" class="mt-1 p-2 w-full border rounded" required>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Enfermaria/Leito</label>
+                        <input type="text" name="enfermaria" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Nível de Assistência Nutricional</label>
-                        <select name="nivelAssistencia" class="mt-1 p-2 w-full border rounded" required>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Nível de Assistência Nutricional</label>
+                        <select name="nivelAssistencia" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required>
                             <option value="Nível I (Primário)">Nível I (Primário)</option>
                             <option value="Nível II (Secundário)">Nível II (Secundário)</option>
                             <option value="Nível III (Terciário)">Nível III (Terciário)</option>
                         </select>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Peso (kg)</label>
-                        <input type="number" name="peso" step="0.1" min="0" class="mt-1 p-2 w-full border rounded" required>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Peso (kg)</label>
+                        <input type="number" name="peso" step="0.1" min="0" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Altura (m)</label>
-                        <input type="number" name="altura" step="0.01" min="0" class="mt-1 p-2 w-full border rounded" required>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Altura (m)</label>
+                        <input type="number" name="altura" step="0.01" min="0" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">IMC (calculado)</label>
-                        <input type="number" name="imc" class="mt-1 p-2 w-full border rounded bg-gray-100" readonly>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">IMC (calculado)</label>
+                        <input type="number" name="imc" class="mt-1 p-2 w-full border rounded bg-gray-100 min-h-10 text-base" readonly>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Dieta</label>
-                        <input type="text" name="dieta" class="mt-1 p-2 w-full border rounded" required>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Dieta</label>
+                        <input type="text" name="dieta" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Refeições</label>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Refeições</label>
                         <div class="flex flex-col gap-2">
                             <div>
-                                <label><input type="checkbox" name="refeicaoCheck" value="Desjejum" class="refeicaoCheck"> Desjejum</label>
-                                <textarea name="refeicaoDesjejum" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc" placeholder="Descrição do Desjejum"></textarea>
+                                <label><input type="checkbox" name="refeicaoCheck" value="Desjejum" class="refeicaoCheck min-h-5 min-w-5"> Desjejum</label>
+                                <textarea name="refeicaoDesjejum" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc min-h-20 text-base" placeholder="Descrição do Desjejum"></textarea>
                             </div>
                             <div>
-                                <label><input type="checkbox" name="refeicaoCheck" value="Almoço" class="refeicaoCheck"> Almoço</label>
-                                <textarea name="refeicaoAlmoço" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc" placeholder="Descrição do Almoço"></textarea>
+                                <label><input type="checkbox" name="refeicaoCheck" value="Almoço" class="refeicaoCheck min-h-5 min-w-5"> Almoço</label>
+                                <textarea name="refeicaoAlmoço" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc min-h-20 text-base" placeholder="Descrição do Almoço"></textarea>
                             </div>
                             <div>
-                                <label><input type="checkbox" name="refeicaoCheck" value="Lanche" class="refeicaoCheck"> Lanche</label>
-                                <textarea name="refeicaoLanche" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc" placeholder="Descrição do Lanche"></textarea>
+                                <label><input type="checkbox" name="refeicaoCheck" value="Lanche" class="refeicaoCheck min-h-5 min-w-5"> Lanche</label>
+                                <textarea name="refeicaoLanche" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc min-h-20 text-base" placeholder="Descrição do Lanche"></textarea>
                             </div>
                             <div>
-                                <label><input type="checkbox" name="refeicaoCheck" value="Jantar" class="refeicaoCheck"> Jantar</label>
-                                <textarea name="refeicaoJantar" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc" placeholder="Descrição do Jantar"></textarea>
+                                <label><input type="checkbox" name="refeicaoCheck" value="Jantar" class="refeicaoCheck min-h-5 min-w-5"> Jantar</label>
+                                <textarea name="refeicaoJantar" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc min-h-20 text-base" placeholder="Descrição do Jantar"></textarea>
                             </div>
                             <div>
-                                <label><input type="checkbox" name="refeicaoCheck" value="Ceia" class="refeicaoCheck"> Ceia</label>
-                                <textarea name="refeicaoCeia" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc" placeholder="Descrição da Ceia"></textarea>
+                                <label><input type="checkbox" name="refeicaoCheck" value="Ceia" class="refeicaoCheck min-h-5 min-w-5"> Ceia</label>
+                                <textarea name="refeicaoCeia" class="mt-1 p-2 w-full border rounded hidden refeicaoDesc min-h-20 text-base" placeholder="Descrição da Ceia"></textarea>
                             </div>
                         </div>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Observações</label>
-                        <textarea name="observacoes" class="mt-1 p-2 w-full border rounded"></textarea>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700">Observações</label>
+                        <textarea name="observacoes" class="mt-1 p-2 w-full border rounded min-h-20 text-base"></textarea>
                     </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" id="cancelModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar</button>
+                    <div class="flex justify-end gap-2 flex-wrap">
+                        <button type="button" id="cancelModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">Cancelar</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">Salvar</button>
                     </div>
                 </form>
             </div>
@@ -106,45 +106,45 @@
 
         <!-- Modal de Visualização de Detalhes -->
         <div id="viewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
-                <h2 class="text-xl font-semibold mb-4">Detalhes do Paciente</h2>
+            <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">Detalhes do Paciente</h2>
                 <!-- Botão de fechar -->
-                <button id="closeViewModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <button id="closeViewModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 min-h-10 min-w-10 touch-action-manipulation bg-gray-100 hover:bg-gray-200 rounded-full p-1 focus:ring-2 focus:ring-gray-500 transition-colors duration-200">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
-                <div id="patientDetails" class="space-y-2"></div>
-                <div class="flex justify-end mt-4">
-                    <button id="closeViewModalFooterBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Fechar</button>
+                <div id="patientDetails" class="space-y-2 text-sm sm:text-base"></div>
+                <div class="flex justify-end mt-4 gap-2 flex-wrap">
+                    <button id="closeViewModalFooterBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">Fechar</button>
                 </div>
             </div>
         </div>
 
         <!-- Modal de Seleção de Refeição -->
         <div id="selectMealModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white p-6 rounded-lg w-full max-w-md relative">
-                <h2 class="text-xl font-semibold mb-4">Selecionar Refeição</h2>
+            <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto relative">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">Selecionar Refeição</h2>
                 <!-- Botão de fechar -->
-                <button id="closeSelectMealModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <button id="closeSelectMealModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 min-h-10 min-w-10 touch-action-manipulation bg-gray-100 hover:bg-gray-200 rounded-full p-1 focus:ring-2 focus:ring-gray-500 transition-colors duration-200">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
                 <form id="selectMealForm">
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Escolha uma refeição:</label>
+                        <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">Escolha uma refeição:</label>
                         <div class="flex flex-col gap-2">
-                            <label><input type="radio" name="selectedMeal" value="Desjejum" required> Desjejum</label>
-                            <label><input type="radio" name="selectedMeal" value="Almoço"> Almoço</label>
-                            <label><input type="radio" name="selectedMeal" value="Lanche"> Lanche</label>
-                            <label><input type="radio" name="selectedMeal" value="Jantar"> Jantar</label>
-                            <label><input type="radio" name="selectedMeal" value="Ceia"> Ceia</label>
+                            <label><input type="radio" name="selectedMeal" value="Desjejum" required class="min-h-5 min-w-5"> Desjejum</label>
+                            <label><input type="radio" name="selectedMeal" value="Almoço" class="min-h-5 min-w-5"> Almoço</label>
+                            <label><input type="radio" name="selectedMeal" value="Lanche" class="min-h-5 min-w-5"> Lanche</label>
+                            <label><input type="radio" name="selectedMeal" value="Jantar" class="min-h-5 min-w-5"> Jantar</label>
+                            <label><input type="radio" name="selectedMeal" value="Ceia" class="min-h-5 min-w-5"> Ceia</label>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" id="cancelSelectMealBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Confirmar</button>
+                    <div class="flex justify-end gap-2 flex-wrap">
+                        <button type="button" id="cancelSelectMealBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">Cancelar</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">Confirmar</button>
                     </div>
                 </form>
             </div>
@@ -152,32 +152,32 @@
 
         <!-- Modal de Resultado da Refeição -->
         <div id="mealResultModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white p-6 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
-                <h2 class="text-xl font-semibold mb-4">
+            <div class="bg-white p-4 sm:p-6 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4">
                     Lista de Pacientes com Refeição Selecionada <span id="mealResultTitle"></span>
                 </h2>
                 <!-- Botão de fechar -->
-                <button id="closeMealResultModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <button id="closeMealResultModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 min-h-10 min-w-10 touch-action-manipulation bg-gray-100 hover:bg-gray-200 rounded-full p-1 focus:ring-2 focus:ring-gray-500 transition-colors duration-200">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
-                <div id="mealResultDetails" class="mb-4"></div>
-                <div class="flex justify-end gap-2 mt-4">
-                    <button id="printLabelsBtn" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Imprimir Etiquetas</button>
-                    <button id="printResultBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Imprimir</button>
-                    <button id="closeMealResultModalFooterBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Fechar</button>
+                <div id="mealResultDetails" class="mb-4 overflow-x-auto text-xs sm:text-sm md:text-base"></div>
+                <div class="flex justify-end gap-2 mt-4 flex-wrap">
+                    <button id="printLabelsBtn" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200">Imprimir Etiquetas</button>
+                    <button id="printResultBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">Imprimir</button>
+                    <button id="closeMealResultModalFooterBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">Fechar</button>
                 </div>
             </div>
         </div>
 
         <!-- Filtros e Botões de Ação -->
-        <div class="mb-4 flex gap-2">
-            <input type="text" id="filterInput" class="p-2 border rounded flex-grow" placeholder="Filtrar por nome, prontuário ou enfermaria">
-            <button id="printMealBtn" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Imprimir Refeição</button>
-            <button id="viewDetailsBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" disabled>Visualizar Detalhes</button>
-            <button id="editSelectedBtn" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600" disabled>Editar Selecionado</button>
-            <button id="deleteSelectedBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" disabled>Excluir Selecionados</button>
+        <div class="mb-4 flex flex-col sm:flex-row gap-4 flex-wrap">
+            <input type="text" id="filterInput" class="p-2 border rounded w-full sm:flex-grow min-h-10 text-base" placeholder="Filtrar por nome, prontuário ou enfermaria">
+            <button id="printMealBtn" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">Imprimir Refeição</button>
+            <button id="viewDetailsBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200" disabled>Visualizar Detalhes</button>
+            <button id="editSelectedBtn" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 disabled:bg-gray-300 disabled:text-gray-500 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200" disabled>Editar Selecionado</button>
+            <button id="deleteSelectedBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:bg-gray-300 disabled:text-gray-500 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200" disabled>Excluir Selecionados</button>
         </div>
 
         <!-- Lista de Pacientes -->
@@ -185,18 +185,18 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            <input type="checkbox" id="selectAll">
+                        <th class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase">
+                            <input type="checkbox" id="selectAll" class="min-h-5 min-w-5">
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prontuário</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enfermaria/Leito</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nível Assistência</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dieta</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IMC</th>
+                        <th class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase">Nome</th>
+                        <th class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase">Prontuário</th>
+                        <th class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase">Enfermaria/Leito</th>
+                        <th class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase">Nível Assistência</th>
+                        <th class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase">Dieta</th>
+                        <th class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase">IMC</th>
                     </tr>
                 </thead>
-                <tbody id="patientList" class="divide-y divide-gray-200"></tbody>
+                <tbody id="patientList" class="divide-y divide-gray-200 text-xs sm:text-sm md:text-base"></tbody>
             </table>
         </div>
     </div>
