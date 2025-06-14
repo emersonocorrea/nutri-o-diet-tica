@@ -31,6 +31,25 @@ function renderPatientList(filteredPatients) {
     updateButtonStates();
 }
 
+// Função para obter pacientes filtrados
+function getFilteredPatients() {
+    const filterInput = document.getElementById('filterInput');
+    if (!filterInput) return patients;
+    const filterValue = filterInput.value.toLowerCase();
+    if (!filterValue) return patients;
+    return patients.filter(patient =>
+        patient.nome.toLowerCase().includes(filterValue) ||
+        patient.prontuario.toLowerCase().includes(filterValue) ||
+        patient.enfermaria.toLowerCase().includes(filterValue)
+    );
+}
+
+// Função para filtrar pacientes e atualizar a tabela
+function filterPatients() {
+    const filteredPatients = getFilteredPatients();
+    renderPatientList(filteredPatients);
+}
+
 // Função para atualizar o estado dos botões de ação
 function updateButtonStates() {
     const checkboxes = document.querySelectorAll('.patientCheckbox:checked');
@@ -44,19 +63,6 @@ function updateButtonStates() {
         editBtn.disabled = checkboxes.length !== 1;
         deleteBtn.disabled = checkboxes.length === 0;
     }
-}
-
-// Função para filtrar pacientes
-function filterPatients() {
-    const filterInput = document.getElementById('filterInput');
-    if (!filterInput) return;
-    const filterValue = filterInput.value.toLowerCase();
-    const filteredPatients = patients.filter(patient =>
-        patient.nome.toLowerCase().includes(filterValue) ||
-        patient.prontuario.toLowerCase().includes(filterValue) ||
-        patient.enfermaria.toLowerCase().includes(filterValue)
-    );
-    renderPatientList(filteredPatients);
 }
 
 // Manipula o modal de cadastro/edição
@@ -88,6 +94,7 @@ const mealResultModal = document.getElementById('mealResultModal');
 const closeMealResultModalBtn = document.getElementById('closeMealResultModalBtn');
 const closeMealResultModalFooterBtn = document.getElementById('closeMealResultModalFooterBtn');
 const mealResultDetails = document.getElementById('mealResultDetails');
+const mealResultTitle = document.getElementById('mealResultTitle');
 const printResultBtn = document.getElementById('printResultBtn');
 
 // Função para atualizar visibilidade dos campos de descrição de refeições
@@ -208,6 +215,7 @@ if (closeMealResultModalFooterBtn) {
 if (printResultBtn) {
     printResultBtn.addEventListener('click', () => {
         const printContent = mealResultDetails.innerHTML;
+        const titleContent = mealResultTitle.textContent;
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
             <html>
@@ -221,7 +229,7 @@ if (printResultBtn) {
                     </style>
                 </head>
                 <body>
-                    <h2>Lista de Pacientes com Refeição Selecionada</h2>
+                    <h2>Lista de Pacientes com Refeição Selecionada ${titleContent}</h2>
                     ${printContent}
                 </body>
             </html>
@@ -275,7 +283,9 @@ if (selectMealForm) {
         e.preventDefault();
         const formData = new FormData(selectMealForm);
         const selectedMeal = formData.get('selectedMeal');
-        if (selectedMeal && mealResultModal && mealResultDetails) {
+        if (selectedMeal && mealResultModal && mealResultDetails && mealResultTitle) {
+            const filteredPatients = getFilteredPatients();
+            mealResultTitle.textContent = filteredPatients.length < patients.length ? '(Filtrada)' : '';
             let tableContent = `
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -288,7 +298,7 @@ if (selectMealForm) {
                     </thead>
                     <tbody class="divide-y divide-gray-200">
             `;
-            patients.forEach(patient => {
+            filteredPatients.forEach(patient => {
                 const mealDesc = patient.refeicoes && patient.refeicoes[selectedMeal] ? patient.refeicoes[selectedMeal] : 'Não registrada';
                 tableContent += `
                     <tr>
