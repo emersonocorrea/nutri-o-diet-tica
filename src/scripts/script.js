@@ -71,9 +71,9 @@ function updateButtonStates() {
 function generatePDFLabels(patients, selectedMeal) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
-        orientation: 'landscape', // Alterado para horizontal
+        orientation: 'landscape', // Horizontal
         unit: 'mm',
-        format: [50, 20] // Tamanho da etiqueta: 50mm largura x 20mm altura
+        format: [90, 35] // Tamanho da etiqueta: 90mm largura x 35mm altura
     });
 
     // Criar um canvas temporário para o código de barras
@@ -83,37 +83,37 @@ function generatePDFLabels(patients, selectedMeal) {
 
     patients.forEach((patient, index) => {
         if (index > 0) {
-            doc.addPage([50, 20]); // Adicionar nova página para cada etiqueta
+            doc.addPage([90, 35]); // Adicionar nova página para cada etiqueta
         }
 
         // Truncar textos para caber na etiqueta
-        const nome = patient.nome.substring(0, 30);
-        const prontuario = patient.prontuario.substring(0, 20);
-        const enfermaria = patient.enfermaria.substring(0, 20);
+        const nome = patient.nome.substring(0, 30); // Relaxado de 15 para 30
+        const prontuario = patient.prontuario.substring(0, 20); // Relaxado de 10 para 20
+        const enfermaria = patient.enfermaria.substring(0, 20); // Relaxado de 10 para 20
         const mealDesc = patient.refeicoes && patient.refeicoes[selectedMeal] ? patient.refeicoes[selectedMeal] : 'Não registrada';
-        const mealLabel = `${selectedMeal}: ${mealDesc}`.substring(0, 30);
+        const mealLabel = `${selectedMeal}: ${mealDesc}`.substring(0, 30); // Relaxado de 15 para 30
 
-        // Adicionar textos na coluna esquerda (30mm)
+        // Adicionar textos na coluna esquerda (~60mm)
         doc.setFont('Helvetica');
-        doc.setFontSize(5); // Reduzido para melhor ajuste
-        doc.text(2, 4, nome);
-        doc.text(2, 8, `Pront: ${prontuario}`);
-        doc.text(2, 12, enfermaria);
-        doc.text(2, 16, mealLabel);
+        doc.setFontSize(15); // Mantido em 15pt
+        doc.text(2, 6, nome); // Ajustado para y=6
+        doc.text(2, 12, `Pront: ${prontuario}`); // Ajustado para y=12
+        doc.text(2, 18, enfermaria); // Ajustado para y=18
+        doc.text(2, 24, mealLabel); // Ajustado para y=24
 
-        // Gerar código de barras na coluna direita (20mm)
-        canvas.width = 60; // Ajuste para resolução suficiente
-        canvas.height = 40;
+        // Gerar código de barras na coluna direita (~30mm)
+        canvas.width = 100; // Aumentado para suportar código de barras maior
+        canvas.height = 60;
         JsBarcode(canvas, prontuario, {
             format: 'CODE128',
             displayValue: false,
-            height: 40,
-            width: 1
+            height: 60,
+            width: 1.5 // Ajustado para maior clareza
         });
         const barcodeData = canvas.toDataURL('image/png');
 
         // Adicionar código de barras ao PDF
-        doc.addImage(barcodeData, 'PNG', 32, 5, 15, 10); // 15mm x 10mm, à direita
+        doc.addImage(barcodeData, 'PNG', 64, 10, 25, 15); // 25mm x 15mm, à direita
 
         // Limpar canvas para a próxima iteração
         const ctx = canvas.getContext('2d');
