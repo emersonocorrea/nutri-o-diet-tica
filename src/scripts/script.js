@@ -34,10 +34,12 @@ function renderPatientList(filteredPatients) {
 // Função para atualizar o estado dos botões de ação
 function updateButtonStates() {
     const checkboxes = document.querySelectorAll('.patientCheckbox:checked');
+    const printMealBtn = document.getElementById('printMealBtn');
     const viewBtn = document.getElementById('viewDetailsBtn');
     const editBtn = document.getElementById('editSelectedBtn');
     const deleteBtn = document.getElementById('deleteSelectedBtn');
-    if (viewBtn && editBtn && deleteBtn) {
+    if (printMealBtn && viewBtn && editBtn && deleteBtn) {
+        printMealBtn.disabled = false; // Sempre habilitado
         viewBtn.disabled = checkboxes.length !== 1;
         editBtn.disabled = checkboxes.length !== 1;
         deleteBtn.disabled = checkboxes.length === 0;
@@ -69,11 +71,24 @@ const alturaInput = patientForm?.querySelector('input[name="altura"]');
 const imcInput = patientForm?.querySelector('input[name="imc"]');
 const editIndexInput = patientForm?.querySelector('input[name="editIndex"]');
 
-// Manipula o modal de visualização
+// Manipula o modal de visualização de detalhes
 const viewModal = document.getElementById('viewModal');
 const closeViewModalBtn = document.getElementById('closeViewModalBtn');
 const closeViewModalFooterBtn = document.getElementById('closeViewModalFooterBtn');
 const patientDetails = document.getElementById('patientDetails');
+
+// Manipula o modal de seleção de refeição
+const selectMealModal = document.getElementById('selectMealModal');
+const closeSelectMealModalBtn = document.getElementById('closeSelectMealModalBtn');
+const cancelSelectMealBtn = document.getElementById('cancelSelectMealBtn');
+const selectMealForm = document.getElementById('selectMealForm');
+
+// Manipula o modal de resultado da refeição
+const mealResultModal = document.getElementById('mealResultModal');
+const closeMealResultModalBtn = document.getElementById('closeMealResultModalBtn');
+const closeMealResultModalFooterBtn = document.getElementById('closeMealResultModalFooterBtn');
+const mealResultDetails = document.getElementById('mealResultDetails');
+const printResultBtn = document.getElementById('printResultBtn');
 
 // Função para atualizar visibilidade dos campos de descrição de refeições
 function toggleRefeicaoDesc() {
@@ -137,7 +152,7 @@ if (cancelModalBtn) {
     });
 }
 
-// Manipula o modal de visualização
+// Manipula o modal de visualização de detalhes
 if (closeViewModalBtn) {
     closeViewModalBtn.addEventListener('click', () => {
         if (viewModal) {
@@ -151,6 +166,68 @@ if (closeViewModalFooterBtn) {
         if (viewModal) {
             viewModal.classList.add('hidden');
         }
+    });
+}
+
+// Manipula o modal de seleção de refeição
+if (closeSelectMealModalBtn) {
+    closeSelectMealModalBtn.addEventListener('click', () => {
+        if (selectMealModal && selectMealForm) {
+            selectMealModal.classList.add('hidden');
+            selectMealForm.reset();
+        }
+    });
+}
+
+if (cancelSelectMealBtn) {
+    cancelSelectMealBtn.addEventListener('click', () => {
+        if (selectMealModal && selectMealForm) {
+            selectMealModal.classList.add('hidden');
+            selectMealForm.reset();
+        }
+    });
+}
+
+// Manipula o modal de resultado da refeição
+if (closeMealResultModalBtn) {
+    closeMealResultModalBtn.addEventListener('click', () => {
+        if (mealResultModal) {
+            mealResultModal.classList.add('hidden');
+        }
+    });
+}
+
+if (closeMealResultModalFooterBtn) {
+    closeMealResultModalFooterBtn.addEventListener('click', () => {
+        if (mealResultModal) {
+            mealResultModal.classList.add('hidden');
+        }
+    });
+}
+
+if (printResultBtn) {
+    printResultBtn.addEventListener('click', () => {
+        const printContent = mealResultDetails.innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Lista de Pacientes - Refeição</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Lista de Pacientes com Refeição Selecionada</h2>
+                    ${printContent}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
     });
 }
 
@@ -178,6 +255,58 @@ if (viewDetailsBtn) {
                 <p><strong>Observações:</strong> ${patient.observacoes || 'Nenhuma'}</p>
             `;
             viewModal.classList.remove('hidden');
+        }
+    });
+}
+
+// Manipula o botão de imprimir refeição
+const printMealBtn = document.getElementById('printMealBtn');
+if (printMealBtn) {
+    printMealBtn.addEventListener('click', () => {
+        if (selectMealModal) {
+            selectMealModal.classList.remove('hidden');
+        }
+    });
+}
+
+// Manipula o envio do formulário de seleção de refeição
+if (selectMealForm) {
+    selectMealForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(selectMealForm);
+        const selectedMeal = formData.get('selectedMeal');
+        if (selectedMeal && mealResultModal && mealResultDetails) {
+            let tableContent = `
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prontuário</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enfermaria/Leito</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">${selectedMeal}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+            `;
+            patients.forEach(patient => {
+                const mealDesc = patient.refeicoes && patient.refeicoes[selectedMeal] ? patient.refeicoes[selectedMeal] : 'Não registrada';
+                tableContent += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${patient.nome}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${patient.prontuario}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${patient.enfermaria}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${mealDesc}</td>
+                    </tr>
+                `;
+            });
+            tableContent += `
+                    </tbody>
+                </table>
+            `;
+            mealResultDetails.innerHTML = tableContent;
+            selectMealModal.classList.add('hidden');
+            selectMealForm.reset();
+            mealResultModal.classList.remove('hidden');
         }
     });
 }
@@ -215,15 +344,15 @@ if (editSelectedBtn) {
             const patient = patients[index];
             modalTitle.textContent = 'Editar Paciente';
             editIndexInput.value = index;
-            patientForm.nome.value = patient.nome;
-            patientForm.prontuario.value = patient.prontuario;
-            patientForm.enfermaria.value = patient.enfermaria;
-            patientForm.nivelAssistencia.value = patient.nivelAssistencia;
-            patientForm.peso.value = patient.peso;
-            patientForm.altura.value = patient.altura;
-            patientForm.imc.value = patient.imc;
-            patientForm.dieta.value = patient.dieta;
-            patientForm.observacoes.value = patient.observacoes || '';
+            patientForm.querySelector('input[name="nome"]').value = patient.nome;
+            patientForm.querySelector('input[name="prontuario"]').value = patient.prontuario;
+            patientForm.querySelector('input[name="enfermaria"]').value = patient.enfermaria;
+            patientForm.querySelector('select[name="nivelAssistencia"]').value = patient.nivelAssistencia;
+            patientForm.querySelector('input[name="peso"]').value = patient.peso;
+            patientForm.querySelector('input[name="altura"]').value = patient.altura;
+            patientForm.querySelector('input[name="imc"]').value = patient.imc;
+            patientForm.querySelector('input[name="dieta"]').value = patient.dieta;
+            patientForm.querySelector('textarea[name="observacoes"]').value = patient.observacoes || '';
             refeicaoCheckboxes.forEach(cb => {
                 cb.checked = patient.refeicoes && !!patient.refeicoes[cb.value];
                 const descField = patientForm.querySelector(`textarea[name="refeicao${cb.value}"]`);
@@ -254,7 +383,7 @@ if (deleteSelectedBtn) {
     });
 }
 
-// Manipula o envio do formulário
+// Manipula o envio do formulário de cadastro/edição
 if (patientForm) {
     patientForm.addEventListener('submit', (e) => {
         e.preventDefault();
