@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SND - Sistema de Nutrição e Dietética Hospitalar</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script src="src/scripts/data.js" defer></script>
     <script src="src/scripts/script.js" defer></script>
 </head>
@@ -95,7 +97,7 @@
                         <textarea name="observacoes" class="mt-1 p-2 w-full border rounded"></textarea>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <button type="button" id="cancelModalBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancelar</button>
+                        <button type="button" id="cancelModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar</button>
                     </div>
                 </form>
@@ -114,7 +116,7 @@
                 </button>
                 <div id="patientDetails" class="space-y-2"></div>
                 <div class="flex justify-end mt-4">
-                    <button id="closeViewModalFooterBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Fechar</button>
+                    <button id="closeViewModalFooterBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Fechar</button>
                 </div>
             </div>
         </div>
@@ -141,7 +143,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <button type="button" id="cancelSelectMealBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancelar</button>
+                        <button type="button" id="cancelSelectMealBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
                         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Confirmar</button>
                     </div>
                 </form>
@@ -162,9 +164,9 @@
                 </button>
                 <div id="mealResultDetails" class="mb-4"></div>
                 <div class="flex justify-end gap-2 mt-4">
-                    <button id="printLabelsPDFBtn" data-endpoint="http://localhost:5000/generate_labels" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Imprimir Etiquetas</button>
+                    <button id="printLabelsBtn" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Imprimir Etiquetas</button>
                     <button id="printResultBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Imprimir</button>
-                    <button id="closeMealResultModalFooterBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Fechar</button>
+                    <button id="closeMealResultModalFooterBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Fechar</button>
                 </div>
             </div>
         </div>

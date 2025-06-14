@@ -67,6 +67,66 @@ function updateButtonStates() {
     }
 }
 
+// Função para gerar PDF com etiquetas no formato horizontal
+function generatePDFLabels(patients, selectedMeal) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'landscape', // Alterado para horizontal
+        unit: 'mm',
+        format: [50, 20] // Tamanho da etiqueta: 50mm largura x 20mm altura
+    });
+
+    // Criar um canvas temporário para o código de barras
+    const canvas = document.createElement('canvas');
+    document.body.appendChild(canvas);
+    canvas.style.display = 'none';
+
+    patients.forEach((patient, index) => {
+        if (index > 0) {
+            doc.addPage([50, 20]); // Adicionar nova página para cada etiqueta
+        }
+
+        // Truncar textos para caber na etiqueta
+        const nome = patient.nome.substring(0, 30);
+        const prontuario = patient.prontuario.substring(0, 20);
+        const enfermaria = patient.enfermaria.substring(0, 20);
+        const mealDesc = patient.refeicoes && patient.refeicoes[selectedMeal] ? patient.refeicoes[selectedMeal] : 'Não registrada';
+        const mealLabel = `${selectedMeal}: ${mealDesc}`.substring(0, 30);
+
+        // Adicionar textos na coluna esquerda (30mm)
+        doc.setFont('Helvetica');
+        doc.setFontSize(5); // Reduzido para melhor ajuste
+        doc.text(2, 4, nome);
+        doc.text(2, 8, `Pront: ${prontuario}`);
+        doc.text(2, 12, enfermaria);
+        doc.text(2, 16, mealLabel);
+
+        // Gerar código de barras na coluna direita (20mm)
+        canvas.width = 60; // Ajuste para resolução suficiente
+        canvas.height = 40;
+        JsBarcode(canvas, prontuario, {
+            format: 'CODE128',
+            displayValue: false,
+            height: 40,
+            width: 1
+        });
+        const barcodeData = canvas.toDataURL('image/png');
+
+        // Adicionar código de barras ao PDF
+        doc.addImage(barcodeData, 'PNG', 32, 5, 15, 10); // 15mm x 10mm, à direita
+
+        // Limpar canvas para a próxima iteração
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // Remover canvas temporário
+    document.body.removeChild(canvas);
+
+    // Baixar o PDF
+    doc.save(`etiquetas_${selectedMeal}.pdf`);
+}
+
 // Manipula o modal de cadastro/edição
 const modal = document.getElementById('modal');
 const modalTitle = document.getElementById('modalTitle');
@@ -98,7 +158,7 @@ const closeMealResultModalFooterBtn = document.getElementById('closeMealResultMo
 const mealResultDetails = document.getElementById('mealResultDetails');
 const mealResultTitle = document.getElementById('mealResultTitle');
 const printResultBtn = document.getElementById('printResultBtn');
-const printLabelsPDFBtn = document.getElementById('printLabelsPDFBtn');
+const printLabelsBtn = document.getElementById('printLabelsBtn');
 
 // Função para atualizar visibilidade dos campos de descrição de refeições
 function toggleRefeicaoDesc() {
@@ -243,28 +303,12 @@ if (printResultBtn) {
 }
 
 // Manipula o botão de imprimir etiquetas em PDF
-if (printLabelsPDFBtn) {
-    printLabelsPDFBtn.addEventListener('click', async () => {
+if (printLabelsBtn) {
+    printLabelsBtn.addEventListener('click', () => {
         if (!currentSelectedMeal) return alert('Nenhuma refeição selecionada.');
         const filteredPatients = getFilteredPatients();
-        const endpoint = printLabelsPDFBtn.dataset.endpoint;
         try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    patients: filteredPatients,
-                    selectedMeal: currentSelectedMeal
-                })
-            });
-            if (!response.ok) throw new Error('Erro ao gerar PDF');
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `etiquetas_${currentSelectedMeal}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
+            generatePDFLabels(filteredPatients, currentSelectedMeal);
         } catch (error) {
             alert('Erro ao gerar etiquetas: ' + error.message);
         }
