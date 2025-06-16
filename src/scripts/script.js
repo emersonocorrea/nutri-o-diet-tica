@@ -1,7 +1,18 @@
-// Inicializa lista de pacientes com dados mock
-let patients = [...mockPatients];
-// Armazena a refeição selecionada globalmente
+import { apiGet, apiPost, apiPut, apiDelete } from './api.js';
+
+// Inicializa lista de pacientes
+let patients = [];
 let currentSelectedMeal = null;
+
+// Função para carregar pacientes do backend
+async function loadPatients() {
+    try {
+        patients = await apiGet('/patients');
+        renderPatientList(patients);
+    } catch (error) {
+        console.error('Erro ao carregar pacientes:', error);
+    }
+}
 
 // Função para calcular IMC
 function calculateIMC(peso, altura) {
@@ -19,7 +30,7 @@ function renderPatientList(filteredPatients) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="px-6 py-4 whitespace-nowrap">
-                <input type="checkbox" class="patientCheckbox" data-index="${index}">
+                <input type="checkbox" class="patientCheckbox" data-index="${index}" data-id="${patient.id}">
             </td>
             <td class="px-6 py-4 whitespace-nowrap">${patient.nome}</td>
             <td class="px-6 py-4 whitespace-nowrap">${patient.prontuario}</td>
@@ -60,7 +71,7 @@ function updateButtonStates() {
     const editBtn = document.getElementById('editSelectedBtn');
     const deleteBtn = document.getElementById('deleteSelectedBtn');
     if (printMealBtn && viewBtn && editBtn && deleteBtn) {
-        printMealBtn.disabled = false; // Sempre habilitado
+        printMealBtn.disabled = false;
         viewBtn.disabled = checkboxes.length !== 1;
         editBtn.disabled = checkboxes.length !== 1;
         deleteBtn.disabled = checkboxes.length === 0;
@@ -71,59 +82,50 @@ function updateButtonStates() {
 function generatePDFLabels(patients, selectedMeal) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
-        orientation: 'landscape', // Horizontal
+        orientation: 'landscape',
         unit: 'mm',
-        format: [90, 35] // Tamanho da etiqueta: 90mm largura x 35mm altura
+        format: [90, 35]
     });
 
-    // Criar um canvas temporário para o código de barras
     const canvas = document.createElement('canvas');
     document.body.appendChild(canvas);
     canvas.style.display = 'none';
 
     patients.forEach((patient, index) => {
         if (index > 0) {
-            doc.addPage([90, 35]); // Adicionar nova página para cada etiqueta
+            doc.addPage([90, 35]);
         }
 
-        // Truncar textos para caber na etiqueta
-        const nome = patient.nome.substring(0, 30); // Relaxado de 15 para 30
-        const prontuario = patient.prontuario.substring(0, 20); // Relaxado de 10 para 20
-        const enfermaria = patient.enfermaria.substring(0, 20); // Relaxado de 10 para 20
+        const nome = patient.nome.substring(0, 30);
+        const prontuario = patient.prontuario.substring(0, 20);
+        const enfermaria = patient.enfermaria.substring(0, 20);
         const mealDesc = patient.refeicoes && patient.refeicoes[selectedMeal] ? patient.refeicoes[selectedMeal] : 'Não registrada';
-        const mealLabel = `${selectedMeal}: ${mealDesc}`.substring(0, 30); // Relaxado de 15 para 30
+        const mealLabel = `${selectedMeal}: ${mealDesc}`.substring(0, 30);
 
-        // Adicionar textos na coluna esquerda (~60mm)
         doc.setFont('Helvetica');
-        doc.setFontSize(15); // Mantido em 15pt
-        doc.text(2, 6, nome); // Ajustado para y=6
-        doc.text(2, 12, `Pront: ${prontuario}`); // Ajustado para y=12
-        doc.text(2, 18, enfermaria); // Ajustado para y=18
-        doc.text(2, 24, mealLabel); // Ajustado para y=24
+        doc.setFontSize(15);
+        doc.text(2, 6, nome);
+        doc.text(2, 12, `Pront: ${prontuario}`);
+        doc.text(2, 18, enfermaria);
+        doc.text(2, 24, mealLabel);
 
-        // Gerar código de barras na coluna direita (~30mm)
-        canvas.width = 100; // Aumentado para suportar código de barras maior
+        canvas.width = 100;
         canvas.height = 60;
         JsBarcode(canvas, prontuario, {
             format: 'CODE128',
             displayValue: false,
             height: 60,
-            width: 1.5 // Ajustado para maior clareza
+            width: 1.5
         });
         const barcodeData = canvas.toDataURL('image/png');
 
-        // Adicionar código de barras ao PDF
-        doc.addImage(barcodeData, 'PNG', 64, 10, 25, 15); // 25mm x 15mm, à direita
+        doc.addImage(barcodeData, 'PNG', 64, 10, 25, 15);
 
-        // Limpar canvas para a próxima iteração
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
 
-    // Remover canvas temporário
     document.body.removeChild(canvas);
-
-    // Baixar o PDF
     doc.save(`etiquetas_${selectedMeal}.pdf`);
 }
 
@@ -318,27 +320,31 @@ if (printLabelsBtn) {
 // Manipula o botão de visualizar detalhes
 const viewDetailsBtn = document.getElementById('viewDetailsBtn');
 if (viewDetailsBtn) {
-    viewDetailsBtn.addEventListener('click', () => {
+    viewDetailsBtn.addEventListener('click', async () => {
         const selectedCheckbox = document.querySelector('.patientCheckbox:checked');
         if (selectedCheckbox && viewModal && patientDetails) {
-            const index = parseInt(selectedCheckbox.dataset.index);
-            const patient = patients[index];
-            patientDetails.innerHTML = `
-                <p><strong>Nome:</strong> ${patient.nome}</p>
-                <p><strong>Prontuário:</strong> ${patient.prontuario}</p>
-                <p><strong>Enfermaria/Leito:</strong> ${patient.enfermaria}</p>
-                <p><strong>Nível de Assistência:</strong> ${patient.nivelAssistencia}</p>
-                <p><strong>Peso:</strong> ${patient.peso} kg</p>
-                <p><strong>Altura:</strong> ${patient.altura} m</p>
-                <p><strong>IMC:</strong> ${patient.imc}</p>
-                <p><strong>Dieta:</strong> ${patient.dieta}</p>
-                <p><strong>Refeições:</strong></p>
-                <ul class="list-disc pl-5">
-                    ${Object.entries(patient.refeicoes || {}).map(([ref, desc]) => `<li>${ref}: ${desc}</li>`).join('') || '<li>Nenhuma refeição registrada</li>'}
-                </ul>
-                <p><strong>Observações:</strong> ${patient.observacoes || 'Nenhuma'}</p>
-            `;
-            viewModal.classList.remove('hidden');
+            const patientId = selectedCheckbox.dataset.id;
+            try {
+                const patient = await apiGet(`/patients/${patientId}`);
+                patientDetails.innerHTML = `
+                    <p><strong>Nome:</strong> ${patient.nome}</p>
+                    <p><strong>Prontuário:</strong> ${patient.prontuario}</p>
+                    <p><strong>Enfermaria/Leito:</strong> ${patient.enfermaria}</p>
+                    <p><strong>Nível de Assistência:</strong> ${patient.nivelAssistencia}</p>
+                    <p><strong>Peso:</strong> ${patient.peso} kg</p>
+                    <p><strong>Altura:</strong> ${patient.altura} m</p>
+                    <p><strong>IMC:</strong> ${patient.imc}</p>
+                    <p><strong>Dieta:</strong> ${patient.dieta}</p>
+                    <p><strong>Refeições:</strong></p>
+                    <ul class="list-disc pl-5">
+                        ${Object.entries(patient.refeicoes || {}).map(([ref, desc]) => `<li>${ref}: ${desc}</li>`).join('') || '<li>Nenhuma refeição registrada</li>'}
+                    </ul>
+                    <p><strong>Observações:</strong> ${patient.observacoes || 'Nenhuma'}</p>
+                `;
+                viewModal.classList.remove('hidden');
+            } catch (error) {
+                alert('Erro ao carregar detalhes: ' + error.message);
+            }
         }
     });
 }
@@ -360,7 +366,7 @@ if (selectMealForm) {
         const formData = new FormData(selectMealForm);
         const selectedMeal = formData.get('selectedMeal');
         if (selectedMeal && mealResultModal && mealResultDetails && mealResultTitle) {
-            currentSelectedMeal = selectedMeal; // Armazena a refeição selecionada
+            currentSelectedMeal = selectedMeal;
             const filteredPatients = getFilteredPatients();
             mealResultTitle.textContent = filteredPatients.length < patients.length ? '(Filtrada)' : '';
             let tableContent = `
@@ -424,31 +430,35 @@ document.addEventListener('change', (e) => {
 // Manipula a edição de um paciente
 const editSelectedBtn = document.getElementById('editSelectedBtn');
 if (editSelectedBtn) {
-    editSelectedBtn.addEventListener('click', () => {
+    editSelectedBtn.addEventListener('click', async () => {
         const selectedCheckbox = document.querySelector('.patientCheckbox:checked');
         if (selectedCheckbox && modal && modalTitle && patientForm) {
-            const index = parseInt(selectedCheckbox.dataset.index);
-            const patient = patients[index];
-            modalTitle.textContent = 'Editar Paciente';
-            editIndexInput.value = index;
-            patientForm.querySelector('input[name="nome"]').value = patient.nome;
-            patientForm.querySelector('input[name="prontuario"]').value = patient.prontuario;
-            patientForm.querySelector('input[name="enfermaria"]').value = patient.enfermaria;
-            patientForm.querySelector('select[name="nivelAssistencia"]').value = patient.nivelAssistencia;
-            patientForm.querySelector('input[name="peso"]').value = patient.peso;
-            patientForm.querySelector('input[name="altura"]').value = patient.altura;
-            patientForm.querySelector('input[name="imc"]').value = patient.imc;
-            patientForm.querySelector('input[name="dieta"]').value = patient.dieta;
-            patientForm.querySelector('textarea[name="observacoes"]').value = patient.observacoes || '';
-            refeicaoCheckboxes.forEach(cb => {
-                cb.checked = patient.refeicoes && !!patient.refeicoes[cb.value];
-                const descField = patientForm.querySelector(`textarea[name="refeicao${cb.value}"]`);
-                if (descField) {
-                    descField.value = patient.refeicoes && patient.refeicoes[cb.value] ? patient.refeicoes[cb.value] : '';
-                }
-            });
-            toggleRefeicaoDesc();
-            modal.classList.remove('hidden');
+            const patientId = selectedCheckbox.dataset.id;
+            try {
+                const patient = await apiGet(`/patients/${patientId}`);
+                modalTitle.textContent = 'Editar Paciente';
+                editIndexInput.value = patientId;
+                patientForm.querySelector('input[name="nome"]').value = patient.nome;
+                patientForm.querySelector('input[name="prontuario"]').value = patient.prontuario;
+                patientForm.querySelector('input[name="enfermaria"]').value = patient.enfermaria;
+                patientForm.querySelector('select[name="nivelAssistencia"]').value = patient.nivelAssistencia;
+                patientForm.querySelector('input[name="peso"]').value = patient.peso;
+                patientForm.querySelector('input[name="altura"]').value = patient.altura;
+                patientForm.querySelector('input[name="imc"]').value = patient.imc;
+                patientForm.querySelector('input[name="dieta"]').value = patient.dieta;
+                patientForm.querySelector('textarea[name="observacoes"]').value = patient.observacoes || '';
+                refeicaoCheckboxes.forEach(cb => {
+                    cb.checked = patient.refeicoes && !!patient.refeicoes[cb.value];
+                    const descField = patientForm.querySelector(`textarea[name="refeicao${cb.value}"]`);
+                    if (descField) {
+                        descField.value = patient.refeicoes && patient.refeicoes[cb.value] ? patient.refeicoes[cb.value] : '';
+                    }
+                });
+                toggleRefeicaoDesc();
+                modal.classList.remove('hidden');
+            } catch (error) {
+                alert('Erro ao carregar paciente para edição: ' + error.message);
+            }
         }
     });
 }
@@ -456,15 +466,20 @@ if (editSelectedBtn) {
 // Manipula a exclusão de pacientes
 const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
 if (deleteSelectedBtn) {
-    deleteSelectedBtn.addEventListener('click', () => {
+    deleteSelectedBtn.addEventListener('click', async () => {
         if (confirm('Deseja excluir os pacientes selecionados?')) {
-            const selectedIndexes = Array.from(document.querySelectorAll('.patientCheckbox:checked'))
-                .map(cb => parseInt(cb.dataset.index))
-                .sort((a, b) => b - a);
-            selectedIndexes.forEach(index => patients.splice(index, 1));
-            renderPatientList(patients);
-            if (selectAll) {
-                selectAll.checked = false;
+            const selectedIds = Array.from(document.querySelectorAll('.patientCheckbox:checked'))
+                .map(cb => cb.dataset.id);
+            try {
+                for (const id of selectedIds) {
+                    await apiDelete(`/patients/${id}`);
+                }
+                await loadPatients();
+                if (selectAll) {
+                    selectAll.checked = false;
+                }
+            } catch (error) {
+                alert('Erro ao excluir pacientes: ' + error.message);
             }
         }
     });
@@ -472,10 +487,10 @@ if (deleteSelectedBtn) {
 
 // Manipula o envio do formulário de cadastro/edição
 if (patientForm) {
-    patientForm.addEventListener('submit', (e) => {
+    patientForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(patientForm);
-        const editIndex = parseInt(formData.get('editIndex'));
+        const editId = formData.get('editIndex');
         const refeicoes = {};
         ['Desjejum', 'Almoço', 'Lanche', 'Jantar', 'Ceia'].forEach(ref => {
             if (formData.getAll('refeicaoCheck').includes(ref)) {
@@ -497,17 +512,21 @@ if (patientForm) {
             refeicoes,
             observacoes: formData.get('observacoes') || ''
         };
-        if (!isNaN(editIndex)) {
-            patients[editIndex] = newPatient;
-        } else {
-            patients.push(newPatient);
+        try {
+            if (editId) {
+                await apiPut(`/patients/${editId}`, newPatient);
+            } else {
+                await apiPost('/patients', newPatient);
+            }
+            await loadPatients();
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            patientForm.reset();
+            toggleRefeicaoDesc();
+        } catch (error) {
+            alert('Erro ao salvar paciente: ' + error.message);
         }
-        renderPatientList(patients);
-        if (modal) {
-            modal.classList.add('hidden');
-        }
-        patientForm.reset();
-        toggleRefeicaoDesc();
     });
 }
 
@@ -519,6 +538,6 @@ if (filterInput) {
 
 // Renderiza a lista inicial
 document.addEventListener('DOMContentLoaded', () => {
-    renderPatientList(patients);
+    loadPatients();
     toggleRefeicaoDesc();
 });

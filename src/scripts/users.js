@@ -1,3 +1,5 @@
+import { apiGet, apiPost, apiPut, apiDelete } from './api.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     const userList = document.getElementById('userList');
     const filterInput = document.getElementById('filterInput');
@@ -16,7 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
     const selectAll = document.getElementById('selectAll');
 
-    let users = JSON.parse(localStorage.getItem('users') || '[]');
+    let users = [];
+
+    // Carrega usuários do backend
+    async function loadUsers() {
+        try {
+            users = await apiGet('/users');
+            renderUsers();
+        } catch (error) {
+            console.error('Erro ao carregar usuários:', error);
+        }
+    }
 
     // Renderizar tabela
     function renderUsers(filter = '') {
@@ -30,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3">
-                    <input type="checkbox" class="userCheckbox min-h-5 min-w-5" data-index="${index}">
+                    <input type="checkbox" class="userCheckbox min-h-5 min-w-5" data-index="${index}" data-id="${user.id}">
                 </td>
                 <td class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3">${user.name}</td>
                 <td class="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-3">${user.email}</td>
@@ -61,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openModalBtn.addEventListener('click', () => {
         modalTitle.textContent = 'Cadastro de Usuário';
         userForm.reset();
-        userForm.editIndex.value = '';
+        userForm.editId.value = '';
         modal.classList.remove('hidden');
     });
 
@@ -74,9 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Salvar usuário
-    userForm.addEventListener('submit', (e) => {
+    userForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const editIndex = userForm.editIndex.value;
+        const editId = userForm.editId.value;
         const user = {
             name: userForm.name.value.trim(),
             email: userForm.email.value.trim(),
@@ -85,36 +97,35 @@ document.addEventListener('DOMContentLoaded', () => {
             status: userForm.status.value
         };
 
-        if (editIndex === '') {
-            if (users.some(u => u.email === user.email)) {
-                alert('E-mail já cadastrado.');
-                return;
+        try {
+            if (editId === '') {
+                await apiPost('/users', user);
+            } else {
+                await apiPut(`/users/${editId}`, user);
             }
-            users.push(user);
-        } else {
-            if (users.some((u, i) => u.email === user.email && i !== Number(editIndex))) {
-                alert('E-mail já cadastrado.');
-                return;
-            }
-            users[Number(editIndex)] = user;
+            await loadUsers();
+            modal.classList.add('hidden');
+        } catch (error) {
+            alert('Erro ao salvar usuário: ' + error.message);
         }
-
-        localStorage.setItem('users', JSON.stringify(users));
-        modal.classList.add('hidden');
-        renderUsers(filterInput.value);
     });
 
     // Visualizar detalhes
-    viewDetailsBtn.addEventListener('click', () => {
-        const selectedIndex = document.querySelector('.userCheckbox:checked').dataset.index;
-        const user = users[Number(selectedIndex)];
-        userDetails.innerHTML = `
-            <p><strong>Nome:</strong> ${user.name}</p>
-            <p><strong>E-mail:</strong> ${user.email}</p>
-            <p><strong>Tipo:</strong> ${user.role === 'admin' ? 'Admin' : 'Usuário'}</p>
-            <p><strong>Status:</strong> ${user.status === 'active' ? 'Ativo' : 'Inativo'}</p>
-        `;
-        viewModal.classList.remove('hidden');
+    viewDetailsBtn.addEventListener('click', async () => {
+        const selectedCheckbox = document.querySelector('.userCheckbox:checked');
+        const userId = selectedCheckbox.dataset.id;
+        try {
+            const user = await apiGet(`/users/${userId}`);
+            userDetails.innerHTML = `
+                <p><strong>Nome:</strong> ${user.name}</p>
+                <p><strong>E-mail:</strong> ${user.email}</p>
+                <p><strong>Tipo:</strong> ${user.role === 'admin' ? 'Admin' : 'Usuário'}</p>
+                <p><strong>Status:</strong> ${user.status === 'active' ? 'Ativo' : 'Inativo'}</p>
+            `;
+            viewModal.classList.remove('hidden');
+        } catch (error) {
+            alert('Erro ao carregar detalhes: ' + error.message);
+        }
     });
 
     // Fechar modal de visualização
@@ -126,27 +137,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Editar usuário
-    editSelectedBtn.addEventListener('click', () => {
-        const selectedIndex = document.querySelector('.userCheckbox:checked').dataset.index;
-        const user = users[Number(selectedIndex)];
-        modalTitle.textContent = 'Editar Usuário';
-        userForm.name.value = user.name;
-        userForm.email.value = user.email;
-        userForm.password.value = user.password;
-        userForm.role.value = user.role;
-        userForm.status.value = user.status;
-        userForm.editIndex.value = selectedIndex;
-        modal.classList.remove('hidden');
+    editSelectedBtn.addEventListener('click', async () => {
+        const selectedCheckbox = document.querySelector('.userCheckbox:checked');
+        const userId = selectedCheckbox.dataset.id;
+        try {
+            const user = await apiGet(`/users/${userId}`);
+            modalTitle.textContent = 'Editar Usuário';
+            userForm.name.value = user.name;
+            userForm.email.value = user.email;
+            userForm.password.value = user.password;
+            userForm.role.value = user.role;
+            userForm.status.value = user.status;
+            userForm.editId.value = userId;
+            modal.classList.remove('hidden');
+        } catch (error) {
+            alert('Erro ao carregar usuário para edição: ' + error.message);
+        }
     });
 
     // Excluir usuários
-    deleteSelectedBtn.addEventListener('click', () => {
+    deleteSelectedBtn.addEventListener('click', async () => {
         if (confirm('Deseja excluir os usuários selecionados?')) {
             const checkboxes = document.querySelectorAll('.userCheckbox:checked');
-            const indices = Array.from(checkboxes).map(cb => Number(cb.dataset.index)).sort((a, b) => b - a);
-            indices.forEach(index => users.splice(index, 1));
-            localStorage.setItem('users', JSON.stringify(users));
-            renderUsers(filterInput.value);
+            const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
+            try {
+                for (const id of ids) {
+                    await apiDelete(`/users/${id}`);
+                }
+                await loadUsers();
+            } catch (error) {
+                alert('Erro ao excluir usuários: ' + error.message);
+            }
         }
     });
 
@@ -162,5 +183,5 @@ document.addEventListener('DOMContentLoaded', () => {
     userList.addEventListener('change', updateButtonStates);
 
     // Inicializar
-    renderUsers();
+    loadUsers();
 });

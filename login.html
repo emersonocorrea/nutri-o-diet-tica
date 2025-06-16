@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SND - Login</title>
+    <title>Sistema de Nutrição e Dietética Hospitalar</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="src/scripts/auth.js" defer></script>
 </head>
-<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white shadow rounded-lg p-4 sm:p-6 w-full sm:max-w-md">
-        <h1 class="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-6">Sistema de Nutrição e Dietética Hospitalar</h1>
-        <h2 class="text-lg sm:text-xl font-semibold mb-4 text-center">Login</h2>
-        <form id="loginForm" class="flex flex-col gap-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">Login</h1>
+        <form id="loginForm" class="space-y-4">
             <div>
-                <label class="block text-sm sm:text-base font-medium text-gray-700">E-mail</label>
-                <input type="email" name="email" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required placeholder="exemplo@hospital.com">
+                <label for="email" class="block text-sm font-medium text-gray-700">E-mail</label>
+                <input type="email" id="email" name="email" class="mt-1 block w-full border-gray-300 rounded p-2" required>
             </div>
             <div>
-                <label class="block text-sm sm:text-base font-medium text-gray-700">Senha</label>
-                <input type="password" name="password" class="mt-1 p-2 w-full border rounded min-h-10 text-base" required placeholder="Digite sua senha">
+                <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                <input type="password" id="password" name="password" class="mt-1 block w-full border-gray-300 rounded p-2" required>
             </div>
-            <div class="flex justify-end">
-                <a href="#" id="forgotPassword" class="text-sm sm:text-base text-blue-500 hover:text-blue-600">Esqueci minha senha</a>
+            <div>
+                <a href="#" id="forgotPassword" class="text-sm text-blue-600 hover:underline">Esqueci minha senha</a>
             </div>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 min-h-10 touch-action-manipulation focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">Entrar</button>
+            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded">Entrar</button>
         </form>
     </div>
+    <script type="module" src="src/scripts/auth.js"></script>
 </body>
 </html>

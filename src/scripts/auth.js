@@ -1,15 +1,9 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar usuário padrão se não existir
-    if (!localStorage.getItem('users')) {
-        const defaultUsers = [
-            { email: 'admin@hospital.com', password: 'admin123', name: 'Admin', role: 'admin', status: 'active' }
-        ];
-        localStorage.setItem('users', JSON.stringify(defaultUsers));
-    }
+import { apiPost } from './api.js';
 
+document.addEventListener('DOMContentLoaded', () => {
     // Proteger páginas (index.html, users.html)
     if (window.location.pathname.includes('index.html') || window.location.pathname.includes('users.html')) {
-        if (!localStorage.getItem('isLoggedIn')) {
+        if (!localStorage.getItem('token')) {
             window.location.href = 'login.html';
         }
     }
@@ -17,19 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Formulário de login
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = loginForm.email.value.trim();
             const password = loginForm.password.value.trim();
 
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const user = users.find(u => u.email === email && u.password === password && u.status === 'active');
-
-            if (user) {
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('currentUser', JSON.stringify(user));
+            try {
+                const response = await apiPost('/auth/login', { email, password });
+                localStorage.setItem('token', response.token);
+                localStorage.setItem('currentUser', JSON.stringify(response.user));
                 window.location.href = 'index.html';
-            } else {
+            } catch (error) {
                 alert('E-mail ou senha incorretos, ou usuário inativo.');
             }
         });
@@ -46,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('token');
             localStorage.removeItem('currentUser');
             window.location.href = 'login.html';
         });
