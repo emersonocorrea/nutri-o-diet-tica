@@ -1,0 +1,58 @@
+# Node.js
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# Build
+dist/
+dist-ssr/
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Vite
+.vite/
+vite.config.js.timestamp-*
+
+# Tailwind CSS
+/output.css
+
+# Vercel
+.vercel
+.vercelignore
+vercel.json.backup
+
+# Netlify
+.netlify
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cache
+*.cache
+.cache/
+
+# Temporary Files
+*.tmp
+*.temp
+
+# Coverage
+coverage/
